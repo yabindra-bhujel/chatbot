@@ -7,6 +7,7 @@ interface Message {
   sender: string;
   text: string;
   createdAt?: string;
+  clientId?: string;
 }
 
 const Chat = () => {
@@ -34,6 +35,7 @@ const Chat = () => {
           sender: "bot",
           text: "Welcome to chat. What can I help you with today?",
           createdAt: new Date().toLocaleTimeString(),
+          clientId: clientIdRef.current,
         },
       ]);
     }
@@ -52,14 +54,19 @@ const Chat = () => {
 
       socket.onmessage = (message: MessageEvent) => {
         const parsedData = JSON.parse(message.data);
-        setMessages((prevMessages) => [
+        if (parsedData.client_id === clientIdRef.current) {
+          setMessages((prevMessages) => [
           ...prevMessages,
           {
             sender: "bot",
             text: parsedData.response,
             createdAt: parsedData.created_at,
+            clientId: parsedData.client_id,
           },
         ]);
+
+        }
+        
         setIsLoading(false);
       };
 

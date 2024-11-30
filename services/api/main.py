@@ -16,6 +16,8 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
         while True:
             prompt = await websocket.receive_text()
             llm_response = await interact_with_llm(prompt)
+
+            llm_response["client_id"] = client_id
             await websocket.send_text(json.dumps(llm_response))
     except WebSocketDisconnect:
         print(f"Client {client_id} disconnected")
