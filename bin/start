@@ -1,0 +1,23 @@
+#!/bin/bash
+
+ROOT_DIR=$(pwd)
+
+cd services/api
+
+if [ -d "venv" ]; then
+    source venv/bin/activate
+    pip install -r requirements.txt
+else
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+fi
+
+uvicorn main:app --reload &
+
+cd $ROOT_DIR
+
+cd services/client
+
+npm install
+npm start
