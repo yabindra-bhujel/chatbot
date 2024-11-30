@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./styles.css";
 import CryptoJS from "crypto-js";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   sender: string;
   text: string;
+  createdAt?: string;
 }
 
 const Chat = () => {
@@ -13,6 +15,11 @@ const Chat = () => {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const clientIdRef = useRef<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const messageEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const getClientIp = (): Promise<string> => {
     return fetch("https://api.ipify.org?format=json")
@@ -26,6 +33,7 @@ const Chat = () => {
         {
           sender: "bot",
           text: "Welcome to chat. What can I help you with today?",
+          createdAt: new Date().toLocaleTimeString(),
         },
       ]);
     }
@@ -43,9 +51,14 @@ const Chat = () => {
       socket.onopen = () => {};
 
       socket.onmessage = (message: MessageEvent) => {
+        const parsedData = JSON.parse(message.data);
         setMessages((prevMessages) => [
           ...prevMessages,
-          { sender: "bot", text: message.data },
+          {
+            sender: "bot",
+            text: parsedData.response,
+            createdAt: parsedData.created_at,
+          },
         ]);
         setIsLoading(false);
       };
@@ -96,15 +109,19 @@ const Chat = () => {
     }
   };
 
-  console.log(isLoading);
-
   return (
     <div>
       <div className="chat-container">
         <div className="chat-list">
           {messages.map((message, index) => (
             <div key={index} className={`chat-item-${message.sender}`}>
-              <div className="chat-item__message">{message.text}</div>
+              {message.sender === "bot" ? (
+                <ReactMarkdown className="chat-item__message">
+                  {message.text}
+                </ReactMarkdown>
+              ) : (
+                <div className="chat-item__message">{message.text}</div>
+              )}
             </div>
           ))}
           {isLoading && (
@@ -114,6 +131,7 @@ const Chat = () => {
               <div className="span"></div>
             </div>
           )}
+          <div ref={messageEndRef} />
         </div>
 
         <div className="chat-input">
