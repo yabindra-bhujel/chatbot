@@ -1,0 +1,11 @@
+
+services:
+  fast_api:
+    build: ./services/api
+    container_name: fast_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./services/api:/app
+    environment:
+      - OLLAMA_MODEL=llama3.2:1b
