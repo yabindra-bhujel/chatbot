@@ -22,7 +22,7 @@ const Chat = () => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const getClientIp = (): Promise<string> => {
+  const getClientIp = async (): Promise<string> => {
     return fetch("https://api.ipify.org?format=json")
       .then((response) => response.json())
       .then((data) => data.ip);
@@ -47,7 +47,7 @@ const Chat = () => {
       clientIdRef.current = CryptoJS.SHA256(finalId).toString(CryptoJS.enc.Hex);
 
       const socket = new WebSocket(
-        `ws://127.0.0.1:8000/ws/${clientIdRef.current}`
+        `ws://127.0.0.1:8000/ws/${clientIdRef.current}`,
       );
 
       socket.onopen = () => {};
@@ -56,17 +56,16 @@ const Chat = () => {
         const parsedData = JSON.parse(message.data);
         if (parsedData.client_id === clientIdRef.current) {
           setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            sender: "bot",
-            text: parsedData.response,
-            createdAt: parsedData.created_at,
-            clientId: parsedData.client_id,
-          },
-        ]);
-
+            ...prevMessages,
+            {
+              sender: "bot",
+              text: parsedData.response,
+              createdAt: parsedData.created_at,
+              clientId: parsedData.client_id,
+            },
+          ]);
         }
-        
+
         setIsLoading(false);
       };
 
@@ -105,7 +104,6 @@ const Chat = () => {
       setIsLoading(true);
     }
   };
-
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter") {
       if (event.altKey) {
